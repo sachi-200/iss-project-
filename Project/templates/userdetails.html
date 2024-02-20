@@ -4,87 +4,129 @@
 <title>User Details</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
-<link rel='stylesheet' href='https://fonts.googleapis.com/css?family=Roboto'>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
-  html,body,h1,h2,h3,h4,h5,h6 {font-family: "Roboto", sans-serif}
+    html, body, h1, h2, h3, h4, h5, h6 {
+        font-family: "Roboto", sans-serif;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        background-color: #e0e0e0; /* Change to your preferred background color */
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .w3-container {
+        padding: 16px;
+    }
+
+    .w3-card-4 {
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .w3-third, .w3-twothird {
+        width: 80%;
+        margin: auto;
+    }
+
+    .w3-display-container {
+        position: relative;
+    }
+
+    img {
+        border-radius: 10px 10px 0 0;
+        width: 100%;
+    }
+
+    form {
+        margin-top: 16px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+
+    input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 16px;
+        box-sizing: border-box;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #555;
+    }
+
+    hr {
+        border: 1px solid #ddd;
+        margin-top: 16px;
+        margin-bottom: 16px;
+    }
 </style>
 </head>
-<body class="w3-light-grey">
 
-<!-- Page Container -->
-<div class="w3-content w3-margin-top" style="max-width:1400px;">
+<body>
 
-  <!-- The Grid -->
-  <div class="w3-row-padding">
-  
-    <!-- Left Column -->
+    <!-- Page Container -->
+    <div class="w3-content w3-margin-top" style="max-width:1400px;">
     
-    <div class="w3-third">
+      <!-- The Grid -->
+      <div class="w3-row-padding">
+      
+        <!-- Centered Column -->
+        <div class="w3-third">
+          <div class="w3-white w3-text-grey w3-card-4">
+            <div class="w3-display-container">
+              <img src="static/avatar.jpg" alt="Avatar">
+            </div>
+            <div class="w3-container">
+              <form onsubmit="updateUserDetails(event)">
+                <label for="username"><b>Username</b></label>
+                <input type="text" id="username" name="username" value="{{user[0]}}" required>
     
-      <div class="w3-white w3-text-grey w3-card-4">
-        <div class="w3-display-container">
-          <img src="static/avatar.jpg" style="width:100%" alt="Avatar">
+                <label for="email"><b>Email</b></label>
+                <input type="email" id="email" name="email" value="{{user[1]}}" required>
+    
+                <button type="submit" class="w3-button w3-blue w3-round">Update Details</button>
+              </form>
+    
+              <button onclick="login()" class="w3-button w3-green w3-round">Logout</button>
+              <hr>
+            </div>
+          </div>
         </div>
-        <div class="w3-container">
-          <p><i class="fa fa-home fa-fw w3-margin-right w3-large w3-text-teal"></i>{{user_details[0]}}</p>
-          <p><i class="fa fa-envelope fa-fw w3-margin-right w3-large w3-text-teal"></i>{{user_details[1]}}</p>
-          <button onclick="login(event)" style="background-color: green; color: white">Logout</button>
-          <hr>
-        </div>
+        
+      <!-- End Grid -->
       </div>
-
-    <!-- End Left Column -->
-    </div>
-
-    <!-- Right Column -->
-    <div class="w3-twothird" style="float:right">
-    
-      <div class="w3-container w3-card w3-white w3-margin-bottom">
-        <center><h2 class="w3-text-grey w3-padding-16"><i class="fa fa-suitcase fa-fw w3-margin-right w3-xxlarge w3-text-teal"></i>My Projects</h2></center>
-        <div class="w3-container">
-          <h5 class="w3-opacity"><b>Project 1</b></h5>
-          <h6 class="w3-text-teal"><i class="fa fa-calendar fa-fw w3-margin-right"></i>Last Updated: 6th Feb 2024</h6>
-          <a href="#">Link to the project</a>
-          <hr>
-        </div>
-        <div class="w3-container">
-          <h5 class="w3-opacity"><b>Project 2</b></h5>
-          <h6 class="w3-text-teal"><i class="fa fa-calendar fa-fw w3-margin-right"></i>Last Updated: 6th Feb 2024</h6>
-          <a href="#"><a href="#">Link to the project</a></a>
-          <hr>
-        </div>
-        <div class="w3-container">
-          <h5 class="w3-opacity"><b>Project 3</b></h5>
-          <h6 class="w3-text-teal"><i class="fa fa-calendar fa-fw w3-margin-right"></i>Last Updated: 6th Feb 2024</h6>
-          <a href="#"><a href="#">Link to the project</a></a>
-          <hr>
-        </div>
-        <div class="w3-container">
-          <h5 class="w3-opacity"><b>Project 4</b></h5>
-          <h6 class="w3-text-teal"><i class="fa fa-calendar fa-fw w3-margin-right"></i>Last Updated: 6th Feb 2024</h6>
-          <a href="#"><a href="#">Link to the project</a></a>
-          <hr>
-        </div>
-      </div>
-
-    <!-- End Right Column -->
+      
+      <!-- End Page Container -->
     </div>
     
-  <!-- End Grid -->
-  </div>
-  
-  <!-- End Page Container -->
-</div>
-
-<script>
-  function login() {
-    event.preventDefault();
+    <script>
+      function login() {
+        event.preventDefault();
+        window.location.href = 'login.html';
+      }
     
-    window.location.href = 'login.html';
-  }
-</script>
-
-</body>
-</html>
+      function updateUserDetails(event) {
+        event.preventDefault();
+        window.alert("User details updated successfully");
+      }
+    </script>
+    
+    </body>
+    </html>
