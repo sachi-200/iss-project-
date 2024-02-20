@@ -110,18 +110,20 @@ def register():
             return redirect('login')
     return render_template('register.html')
 
-@app.route('/userdetails')
+@app.route('<user>/userdetails', methods=['GET','POST'])
 @jwt_required()  # Protect this route with JWT authentication
-def userdetails():
-    user_details_query = "SELECT username, email FROM userdetails WHERE serialnumber = 1"
-    user_details_result = get_users(user_details_query)
-    
-    if user_details_result:
-        user_details = user_details_result[0]
-    else:
-        return "User not found"
-
-    return render_template('userdetails.html', user_details=user_details)
+def userdetails(user):
+    if request.method == "POST":
+        data=request.form
+        username=data["username"]
+        email=data["email"]
+        query=f"update userdetails set username='{username}', email='{email}' where user='{user}'"
+        cur=db.cursor()
+        cur.execute(query)
+        cur.close()
+        db.commit()
+        return render_template('userdetails.html')
+    return render_template('userdetails.html')
 
 @app.route('/editing')
 @jwt_required()  # Protect this route with JWT authentication
