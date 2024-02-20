@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+
+    <title>New Project</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="static/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="static/css/album.css" rel="stylesheet">
+    <style>
+      #drop-area {
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        width: 50vw;
+        height: 300px;
+        margin: 20px auto;
+        text-align: center;
+        padding: 20px;
+      }
+      #mini-images-container {
+        border: 2px solid #ccc; /* Add border around the mini images */
+        border-radius: 10px;
+        padding: 10px;
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+      }
+      #mini-images {
+        display: flex;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      }
+      .mini-image {
+        width: 100px; /* Make the images larger */
+        height: 100px;
+        margin: 5px;
+        border: 1px solid #ccc;
+      }
+    </style>
+  </head>
+
+  
+
+    <body>
+
+        <header>
+          <div class="collapse bg-dark" id="navbarHeader">
+            <div class="container">
+              <div class="row">
+                <div class="col-sm-8 col-md-7 py-4">
+                  <h4 class="text-white">MOTIONal</h4>
+                  <p class="text-muted">Memories are not static, why should your Photos be? Get started with Uploading Images and see your Memories come to Life!</p>
+                </div>
+                <div class="col-sm-4 offset-md-1 py-4">
+                  <h4 class="text-white">Quick Links</h4>
+                  <ul class="list-unstyled">
+                    <li><a href="userdetails.html" class="text-white">Profile</a></li>
+                    <li><a href="project_page.html" class="text-white">My Project Page</a></li>
+                    <li><a href="#" class="text-white">Upload New</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="navbar navbar-dark bg-dark box-shadow">
+            <div class="container d-flex justify-content-between">
+              <a href="#" class="navbar-brand d-flex align-items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                <strong>MOTIONal</strong>
+              </a>
+              <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+            </div>
+          </div>
+        </header>
+    
+
+    <main role="main">
+<br><br>
+        <section class="jumbotron text-center">
+            <div class="container">
+              <h1 class="jumbotron-heading">Upload Images</h1>
+              <!-- Drop area with upload button -->
+              <div id="drop-area" ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
+                Drop your images here or 
+                <button onclick="document.getElementById('file-upload').click()" class="custom-file-upload">
+                    Upload Manually
+                  </button>
+                  <input id="file-upload" type="file" multiple style="display:none;" onchange="handleManualUpload(event)">
+              </div>
+              <!-- Mini images section -->
+
+              <div id="mini-images-container">
+                <div id="mini-images"></div>
+              </div>
+          </section>
+      
+    </main>
+
+    <footer class="text-muted">
+      <div class="container">
+    
+      </div>
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="static/js/jquery-slim.min.js"><\/script>')</script>
+    <script src="static/js/popper.min.js"></script>
+    <script src="static/js/bootstrap.min.js"></script>
+    <script src="static/js/holder.min.js"></script>
+
+    <script>
+      function dropHandler(event) {
+        event.preventDefault();
+        if (event.dataTransfer.items) {
+          for (let i = 0; i < event.dataTransfer.items.length; i++) {
+            // If dropped items aren't files, reject them
+            if (event.dataTransfer.items[i].kind === 'file') {
+              const file = event.dataTransfer.items[i].getAsFile();
+              if (file.type.startsWith('image')) {
+                displayImage(file);
+              }
+            }
+          }
+        }
+      }
+
+      function dragOverHandler(event) {
+        event.preventDefault();
+      }
+
+      function displayImage(file) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          const miniImagesDiv = document.getElementById('mini-images');
+          const img = document.createElement('img');
+          img.src = event.target.result;
+          img.classList.add('mini-image');
+          miniImagesDiv.appendChild(img);
+          // You can add further functionality here like reordering
+          // the images or any other manipulation you want to do.
+        };
+        reader.readAsDataURL(file);
+      }
+      function handleManualUpload(event) {
+        const files = event.target.files;
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          if (file.type.startsWith('image')) {
+            displayImage(file);
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
