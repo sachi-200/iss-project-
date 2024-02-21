@@ -9,7 +9,7 @@ jwt = JWTManager(app)
 # MySQL Configuration
 mysql_host = 'localhost'
 mysql_user = 'root'
-mysql_password = 'Matilda+10'
+mysql_password = 'spnpft267'
 
 # Connect to MySQL
 db = mysql.connector.connect(
