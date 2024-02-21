@@ -229,30 +229,31 @@ def new_project():
         user_id = get_jwt_identity()
         # Retrieve project details from the form data
         # Adjust these lines to retrieve all the project details from the form
+        image1_link=request.form['image1_link']
         data = (
             user_id,
-            request.form['image1_link'],
-            request.form['image2_link'],
-            request.form['image3_link'],
-            request.form['image4_link'],
-            request.form['image5_link'],
-            request.form['image1_duration'],
-            request.form['image2_duration'],
-            request.form['image3_duration'],
-            request.form['image4_duration'],
-            request.form['image5_duration'],
-            request.form['audio1_link'],
-            request.form['audio2_link'],
-            request.form['audio3_link'],
-            request.form['audio1_duration'],
-            request.form['audio2_duration'],
-            request.form['audio3_duration'],
-            request.form['audio1_starting_time'],
-            request.form['audio2_starting_time'],
-            request.form['audio3_starting_time'],
-            request.form['overlay_text1'],
-            request.form['overlay_text2'],
-            request.form['overlay_text3']
+            image1_link,
+            None,  # image2_link
+            None,  # image3_link
+            None,  # image4_link
+            None,  # image5_link
+            None,  # image1_duration
+            None,  # image2_duration
+            None,  # image3_duration
+            None,  # image4_duration
+            None,  # image5_duration
+            None,  # audio1_link
+            None,  # audio2_link
+            None,  # audio3_link
+            None,  # audio1_duration
+            None,  # audio2_duration
+            None,  # audio3_duration
+            None,  # audio1_starting_time
+            None,  # audio2_starting_time
+            None,  # audio3_starting_time
+            None,  # overlay_text1
+            None,  # overlay_text2
+            None,  # overlay_text3
         )
         # Insert the new project record into the database
         if insert_project(data):
