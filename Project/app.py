@@ -13,39 +13,44 @@ jwt = JWTManager(app)
 mysql_host = 'localhost'
 mysql_user = 'root'
 mysql_password = 'Ami@1805SQL'
-mysql_db = 'user'
 
+db = mysql.connector.connect(
+    host=mysql_host,
+    user=mysql_user,
+    password=mysql_password,
+)
 def initialization():
-    try:
-        db = mysql.connector.connect(
-            host=mysql_host,
-            user=mysql_user,
-            password=mysql_password,
-            database=mysql_db
-        )
-        cur = db.cursor()
-        cur.execute("CREATE TABLE IF NOT EXISTS userdetails(serialnumber INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user VARCHAR(1000), email VARCHAR(1000), username VARCHAR(1000), password VARCHAR(300))")
+    cur=db.cursor()
+    cur.execute("show databases;")
+    l=cur.fetchall()
+    flag=0
+    l=[i[0] for i in l]
+    for i in l:
+        if i=='user':
+            flag=-1
+    cur=db.cursor()
+    if flag==0:
+        query="create database user"
+        cur.execute(query)
+        query="use user"
+        cur.execute(query)
+        query="create table userdetails(serialnumber int not null Primary Key, user varchar(1000), email varchar(1000), username varchar(1000), password varchar(300))"
+        cur.execute(query)
         db.commit()
         cur.close()
         db.close()
-    except mysql.connector.Error as e:
-        print(f"Error initializing database: {e}")
-
-def get_db_connection():
-    try:
-        return mysql.connector.connect(
-            host=mysql_host,
-            user=mysql_user,
-            password=mysql_password,
-            database=mysql_db
-        )
-    except mysql.connector.Error as e:
-        print(f"Error connecting to database: {e}")
-        return None
+        return
+    else:
+        query="use user"
+        cur.execute(query)
+        db.commit()
+        cur.close()
+        db.close()
+        return
 
 def get_users(query):
     try:
-        db = get_db_connection()
+        
         if db:
             cur = db.cursor()
             cur.execute(query)
@@ -59,17 +64,18 @@ def get_users(query):
         print(f"Error executing query: {e}")
         return None
     
-def store_users(query):
+def store_users(user, email, username, password):
     try:
-        db = get_db_connection()
+        
         if db:
             cur = db.cursor()
-            cur.execute(query)
-            db.commit()
+            cur.execute(f"INSERT INTO userdetails (user, email, username, password) VALUES ('{user}', '{email}','{username}','{password}')")
             cur.close()
+            db.commit()
             db.close()
             return True
         else:
+            print("llalalalal")
             return False
     except Exception as e:
         print(f"Error executing query: {e}")
@@ -82,7 +88,7 @@ def mainpage():
 
 @app.route('/admin')
 def admin():
-    admin_details="SELECT serialnumber, user, username, email FROM userdetails"
+    admin_details="SELECT * FROM userdetails"
     users = get_users(admin_details)
     return render_template('admin.html', users=users)
 
@@ -114,9 +120,10 @@ def register():
         username = data["username"]
         password = data["password"]
        
-        register_details_query = "INSERT INTO userdetails (user, email, username, password) VALUES (%s, %s, %s, %s)"
-        reg=store_users(register_details_query)
-        if store_users(reg):
+        
+
+        reg=store_users(user, email, username, password)
+        if reg:
             # Generate JWT token
             access_token = create_access_token(identity=user)
             resp = jsonify()
