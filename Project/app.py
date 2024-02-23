@@ -4,7 +4,7 @@ import json
 import mysql.connector
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies
 app = Flask(__name__)
-
+app.secret_key = 'your_secret_key'
 app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'  # Set your JWT secret key
 app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "query_string", "json"]
 jwt = JWTManager(app)
@@ -92,14 +92,15 @@ def login():
         data = request.form
         user = data["username"]
         password = data["password"]
+        
         login_query = "SELECT * FROM userdetails WHERE username=%s AND password=%s"
         user_details = get_users(login_query, (user, password))
         if user_details:
             # Generate JWT token
-            resp = jsonify()
+            resp = jsonify(login == True)
             access_token = create_access_token(identity=user)
             set_access_cookies(resp, access_token)
-            return redirect(url_for('project_page', user = user)) 
+            return redirect(url_for('userdetails', user=user)) 
         else:
             return jsonify({"message": "Invalid username or password"}), 401
     return render_template('login.html')
@@ -112,9 +113,10 @@ def register():
         email = data["email"]
         username = data["username"]
         password = data["password"]
-        password = generate_password_hash(password, method='pbkdf2:sha256')
+       
         register_details_query = "INSERT INTO userdetails (user, email, username, password) VALUES (%s, %s, %s, %s)"
-        if store_users(register_details_query):
+        reg=store_users(register_details_query)
+        if store_users(reg):
             # Generate JWT token
             access_token = create_access_token(identity=user)
             resp = jsonify()
@@ -122,10 +124,10 @@ def register():
             return redirect(url_for('login'))
     return render_template('register.html')
 
-@app.route('/userdetails')
-@jwt_required()  # Protect this route with JWT authentication
-def userdetails():
-    user_details_query = "SELECT username, email FROM userdetails WHERE serialnumber = 1"
+@app.route('/<user>/userdetails')
+  # Protect this route with JWT authentication
+def userdetails(user):
+    user_details_query = f"SELECT username FROM userdetails WHERE username = '{user}'"
     user_details_result = get_users(user_details_query)
     
     if user_details_result:
@@ -133,7 +135,7 @@ def userdetails():
     else:
         return "User not found"
 
-    return render_template('userdetails.html', user_details=user_details)
+    return render_template('userdetails.html', user=user_details)
 
 @app.route('/editing')
 @jwt_required()  # Protect this route with JWT authentication
