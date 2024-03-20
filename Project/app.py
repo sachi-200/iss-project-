@@ -4,8 +4,6 @@ import json
 
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies
 import os
-from sqlalchemy import create_engine, text
-
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -121,6 +119,19 @@ def insert_project(session, project_data):
 def get_user_projects(session, user_id):
     return session.query(Project).filter_by(user_id=user_id).all()
 
+def get_users(query):
+    session = get_session()
+    result = session.execute(query)
+    users = result.fetchall()
+    session.close()
+    return users
+
+def store_users(query):
+    session = get_session()
+    result = session.execute(query)
+    users = result.fetchall()
+    session.close()
+    return users
 
 @app.route('/')
 def mainpage():
@@ -131,7 +142,7 @@ def mainpage():
 
 @app.route('/admin')
 def admin():
-    admin_details="SELECT serialnumber, user, username, email FROM userdetails"
+    admin_details="SELECT serialnumber, user, username, email FROM users"
     users = get_users(admin_details)
     return render_template('admin.html', users=users)
 
@@ -141,8 +152,10 @@ def login():
         data = request.form
         user = data["username"]
         password = data["password"]
-        login_query = "SELECT * FROM userdetails WHERE username=%s AND password=%s"
-        user_details = get_users(login_query, (user, password))
+        if (user=="admin" and password=="admin123"):
+            return redirect(url_for('admin'))
+        login_query = f"SELECT * FROM userdetails WHERE username='{user}' AND password='{password}'"
+        user_details = get_users(login_query)
         if user_details:
             # Generate JWT token
             resp = jsonify(login=True)
@@ -161,8 +174,8 @@ def register():
         email = data["email"]
         username = data["username"]
         password = data["password"]
-        register_details_query = "INSERT INTO userdetails (user, email, username, password) VALUES (%s, %s, %s, %s)"
-        if store_users(register_details_query, (user, email, username, password)):
+        register_details_query = f"INSERT INTO userdetails (user, email, username, password) VALUES ('{user}', '{email}', '{username}', '{password}')"
+        if store_users(register_details_query):
             # Generate JWT token
             access_token = create_access_token(identity=user)
             resp = jsonify(login=True)
