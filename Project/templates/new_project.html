@@ -85,83 +85,70 @@
 
     <main role="main">
 <br><br>
-        <section class="jumbotron text-center">
-            <div class="container">
-              <h1 class="jumbotron-heading">Upload Images</h1>
-              <!-- Drop area with upload button -->
-              <div id="drop-area" ondrop="dropHandler(event)" ondragover="dragOverHandler(event)">
-                Drop your images here or 
-                <button onclick="document.getElementById('file-upload').click()" class="custom-file-upload">
-                    Upload Manually
-                  </button>
-                  <input id="file-upload" type="file" multiple style="display:none;" onchange="handleManualUpload(event)">
-              </div>
-              <!-- Mini images section -->
-
-              <div id="mini-images-container">
-                <div id="mini-images"></div>
-              </div>
-          </section>
-      
-    </main>
-
-    <footer class="text-muted">
-      <div class="container">
-    
-      </div>
-    </footer>
-
-    <!-- Bootstrap core JavaScript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script>window.jQuery || document.write('<script src="../static/js/jquery-slim.min.js"><\/script>')</script>
-    <script src="../static/js/popper.min.js"></script>
-    <script src="../static/js/bootstrap.min.js"></script>
-    <script src="../static/js/holder.min.js"></script>
-
-    <script>
-      function dropHandler(event) {
-        event.preventDefault();
-        if (event.dataTransfer.items) {
-          for (let i = 0; i < event.dataTransfer.items.length; i++) {
-            // If dropped items aren't files, reject them
-            if (event.dataTransfer.items[i].kind === 'file') {
-              const file = event.dataTransfer.items[i].getAsFile();
-              if (file.type.startsWith('image')) {
-                displayImage(file);
-              }
-            }
-          }
-        }
-      }
-
-      function dragOverHandler(event) {
-        event.preventDefault();
-      }
-
-      function displayImage(file) {
-        const reader = new FileReader();
-        reader.onload = function(event) {
-          const miniImagesDiv = document.getElementById('mini-images');
-          const img = document.createElement('img');
-          img.src = event.target.result;
-          img.classList.add('mini-image');
-          miniImagesDiv.appendChild(img);
-          // You can add further functionality here like reordering
-          // the images or any other manipulation you want to do.
-        };
-        reader.readAsDataURL(file);
-      }
-      function handleManualUpload(event) {
-        const files = event.target.files;
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          if (file.type.startsWith('image')) {
-            displayImage(file);
-          }
-        }
-      }
-    </script>
+<h2>Upload Project Images</h2>
+<div id="drop-zone">
+Drag and Drop Images Here
+</div>
+<form id="upload-form" method="post" enctype="multipart/form-data">
+Project Name: <input type="text" name="project_name" id="project_name"><br>
+<input type="file" name="file" id="file" multiple style="display: none;"><br>
+<div id="preview"></div>
+<input type="submit">
+</form>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function(){
+var dropZone = $('#drop-zone');
+// When a file is dragged over the drop zone
+dropZone.on('dragover', function(e) {
+e.preventDefault();
+e.stopPropagation();
+$(this).addClass('dragging');
+});
+// When a file is dragged out of the drop zone
+dropZone.on('dragleave', function(e) {
+e.preventDefault();
+e.stopPropagation();
+$(this).removeClass('dragging');
+});
+// When a file is dropped into the drop zone
+dropZone.on('drop', function(e) {
+e.preventDefault();
+e.stopPropagation();
+$(this).removeClass('dragging');
+var files = e.originalEvent.dataTransfer.files;
+$('#file').prop('files', files); // Add the files to the hidden input element
+// Display thumbnails of the selected images
+$('#preview').empty();
+for (var i = 0; i < files.length; i++) {
+var reader = new FileReader();
+reader.onload = function(e) {
+var img = $('<img>').attr('src', e.target.result);
+var button = $('<button>').text('Remove').click(function() {
+$(this).parent().remove();
+});
+var div = $('<div>').append(img, button);
+$('#preview').append(div);
+};
+reader.readAsDataURL(files[i]);
+}
+});
+$("#upload-form").on('submit', function(e){
+e.preventDefault();
+var formData = new FormData(this);
+$.ajax({
+url: '/upload',
+type: 'POST',
+data: formData,
+success: function (data) {
+alert('Files uploaded successfully');
+},
+cache: false,
+contentType: false,
+processData: false
+});
+});
+});
+</script>
   </body>
 </html>
