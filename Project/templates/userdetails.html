@@ -1,132 +1,100 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>User Details</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-    html, body, h1, h2, h3, h4, h5, h6 {
-        font-family: "Roboto", sans-serif;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
         margin: 0;
         padding: 0;
-    }
-
-    body {
-        background-color: #e0e0e0; /* Change to your preferred background color */
-        height: 100vh;
+        background-color: #f0f0f0;
+        background-image: url('/static/userdetailsbackground.jpg');
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+      
+      .container {
         display: flex;
-        justify-content: center;
+        justify-content: flex-end; /* Align container to the right */
         align-items: center;
-    }
-
-    .w3-container {
-        padding: 16px;
-    }
-
-    .w3-card-4 {
+        height: 100vh;
+        padding-right: 20px; /* Add some padding to the right side */
+      }      
+      
+      .profile-card {
+        background-color: #fff;
+        width: 300px;
         border-radius: 10px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .w3-third, .w3-twothird {
-        width: 80%;
-        margin: auto;
-    }
-
-    .w3-display-container {
-        position: relative;
-    }
-
-    img {
-        border-radius: 10px 10px 0 0;
-        width: 100%;
-    }
-
-    form {
-        margin-top: 16px;
-    }
-
-    label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: bold;
-    }
-
-    input {
-        width: 100%;
-        padding: 8px;
-        margin-bottom: 16px;
-        box-sizing: border-box;
-    }
-
-    button {
-        width: 100%;
-        padding: 10px;
+        padding: 20px;
+      }
+      
+      .profile-header {
+        text-align: center;
+      }
+      
+      .profile-picture {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+      }
+      
+      .username {
+        margin: 5px 0;
+        font-size: 1.5rem;
+      }
+      
+      .email {
+        margin: 0;
+        color: #666;
+      }
+      
+      .logout-container {
+        margin-top: 20px;
+        text-align: center;
+      }
+      
+      .logout-button {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
         border: none;
         border-radius: 5px;
         cursor: pointer;
-    }
-
-    button:hover {
-        background-color: #555;
-    }
-
-    hr {
-        border: 1px solid #ddd;
-        margin-top: 16px;
-        margin-bottom: 16px;
-    }
-</style>
+        font-size: 1rem;
+      }
+      
+      .logout-button:hover {
+        background-color: #45a049;
+      }
+      
+  </style>
 </head>
-
 <body>
-
-    <!-- Page Container -->
-    <div class="w3-content w3-margin-top" style="max-width:1400px;">
-    
-      <!-- The Grid -->
-      <div class="w3-row-padding">
-      
-        <!-- Centered Column -->
-        <div class="w3-third">
-          <div class="w3-white w3-text-grey w3-card-4">
-            <div class="w3-display-container">
-              <img src="../static/avatar.jpg" alt="Avatar">
-            </div>
-            <div class="w3-container">
-              <form onsubmit="updateUserDetails(event)">
-                <label for="username"><b>Username</b></label>
-                <input type="text" id="username" name="username" value="{{user_details[0]}}" required>
-    
-                <label for="email"><b>Email</b></label>
-                <input type="email" id="email" name="email" value="{{user_details[1]}}" required>
-    
-                <button type="submit" class="w3-button w3-blue w3-round">Update Details</button>
-              </form>
-    
-              <button onclick="login()" class="w3-button w3-green w3-round">Logout</button>
-              <hr>
-            </div>
-          </div>
-        </div>
-        
-      <!-- End Grid -->
+  <div class="container">
+    <div class="profile-card">
+      <div class="profile-header">
+        <img src="/static/avatar.jpg" alt="Profile Picture" class="profile-picture">
+        <h2 class="username">USERNAME: {{user_details[0]}}</h2>
+        <p class="email">EMAIL: {{user_details[1]}}</p>
       </div>
-      
-      <!-- End Page Container -->
+      <div class="logout-container">
+        <button onclick="login()" class="logout-button">Logout</button>
+      </div>
     </div>
-    
-    <script>
-      function login() {
-        event.preventDefault();
-        window.location.href = 'login.html';
-      }
-    
-      function updateUserDetails(event) {
-        event.preventDefault();
-        window.alert("User details updated successfully");
-      }
-    </script>
-    
-    </body>
-    </html>
+  </div>
+
+  <script>
+    function login() {
+      event.preventDefault();
+      window.location.href = 'login.html';
+    }
+  </script>
+
+</body>
+</html>
