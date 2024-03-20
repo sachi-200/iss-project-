@@ -1,13 +1,10 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, session
 from werkzeug.security import check_password_hash, generate_password_hash
-import os
-import psycopg2
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text
+from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.sql import text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -15,7 +12,7 @@ app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'  # Set your JWT secret key
 app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "query_string", "json"]
 jwt = JWTManager(app)
 
-# MySQL Configuration
+# SQLAlchemy Configuration
 Base = declarative_base()
 
 def initialize_db(engine):
@@ -29,7 +26,6 @@ class User(Base):
     username = Column(String(1000))
     password = Column(String(300))
 
-
 def get_session():
     engine = create_engine("cockroachdb://amiabuch:jaWHu24ejIX9F_vQ-KciWA@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
     Session = sessionmaker(bind=engine)
@@ -42,14 +38,12 @@ def initialize_user_table(session):
             username VARCHAR(1000),
             password VARCHAR(300)
         )"""))
-   
     session.commit()
 
 def insert_user(session, user_data):
     new_user = User(**user_data)
     session.add(new_user)
     try:
-    # <use session>
         session.commit()
     except:
         session.rollback()
@@ -64,7 +58,6 @@ def mainpage():
     initialize_db(engine)
     session = get_session()
     initialize_user_table(session)
-
     session.close()
     return render_template('mainpage.html')
 
@@ -72,7 +65,7 @@ def mainpage():
 def register():
     if request.method == "POST":
         data = request.form
-        user_data =  {
+        user_data = {
             "email": data["email"],
             "username": data["username"],
             "password": generate_password_hash(data["password"])
@@ -105,6 +98,21 @@ def login():
         else:
             return jsonify({"message": "Invalid username or password"}), 401
     return render_template('login.html')
+
+@app.route('/userdetails')
+@jwt_required()  # Protect this route with JWT authentication
+def userdetails():
+    user_details_query = "SELECT username, email FROM users WHERE serialnumber = %s"
+    user_id = get_jwt_identity()
+    session = get_session()
+    user_details_result = session.execute(user_details_query, (user_id,))
+    user_details = user_details_result.fetchone()
+    session.close()
+
+    if user_details:
+        return render_template('userdetails.html', user_details=user_details)
+    else:
+        return "User not found"
 
 if __name__ == "__main__":
     app.run(debug=True)
