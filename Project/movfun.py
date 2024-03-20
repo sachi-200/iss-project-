@@ -1,21 +1,31 @@
 import os
 import glob
 from natsort import natsorted
+from PIL import Image
+import io
 from moviepy.editor import *
 
-def create_video_from_images(image_dir, image_lengths, output_file, transition_types=None, transition_duration=1, fps=24 , audio_file=None):
-    # Get absolute path of the image directory
-    base_dir = os.path.realpath(image_dir)
+def bytes_to_image_pil(byte_data):
+    image = Image.open(io.BytesIO(byte_data))
+    return image
+
+def create_video_from_images(image_list, image_lengths, output_file, transition_types=None, transition_duration=1, fps=24 , audio_file=None):
+    # # Get absolute path of the image directory
+    # base_dir = os.path.realpath(image_dir)
     
-    # Change directory to the image directory
-    os.chdir(base_dir)
+    # # Change directory to the image directory
+    # os.chdir(base_dir)
     
-    # Get all the jpg, jpeg, and png files in the directory
-    file_list = glob.glob('*.jpg') + glob.glob('*.jpeg') + glob.glob('*.png')
+    # # Get all the jpg, jpeg, and png files in the directory
+    # file_list = glob.glob('*.jpg') + glob.glob('*.jpeg') + glob.glob('*.png')
     
-    # Sort the images
-    file_list_sorted = natsorted(file_list, reverse=False)
-    
+    # # Sort the images
+    # file_list_sorted = natsorted(file_list, reverse=False)
+    file_list_sorted=[]
+    for image_da in image_list:
+        image=bytes_to_image_pil(image_da)
+        file_list_sorted.append(image)
+
     # Check if the length of file_list_sorted matches the length of image_lengths
     if len(file_list_sorted) != len(image_lengths):
         print("Number of images and lengths do not match.")
