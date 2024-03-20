@@ -1,8 +1,12 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for
 from werkzeug.security import generate_password_hash, check_password_hash
 import json
-import mysql.connector
+
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies
+import os
+from sqlalchemy import create_engine, text
+
+
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 app.config['JWT_SECRET_KEY'] = 'your_secret_key_here'  # Set your JWT secret key
@@ -10,192 +14,117 @@ app.config["JWT_TOKEN_LOCATION"] = ["headers", "cookies", "query_string", "json"
 jwt = JWTManager(app)
 
 # MySQL Configuration
-mysql_host = 'localhost'
-mysql_user = 'root'
-mysql_password = 'Matilda+10'
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Text
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
-def initialization():
-    db = mysql.connector.connect(
-        host=mysql_host,
-        user=mysql_user,
-        password=mysql_password,
-    )
-    cur=db.cursor()
-    cur.execute("show databases")
-    l=cur.fetchall()
-    flag=0
-    l=[i[0] for i in l]
-    for i in l:
-        if i=='user':
-            flag=-1
-    cur=db.cursor()
-    if flag==0:
-        query="create database user"
-        cur.execute(query)
-        db.commit()
-        query="use user"
-        cur.execute(query)
-        db.commit()
-        cur.close()
-        db.close()
-        return
-    else:
-        query="use user"
-        cur.execute(query)
-        db.commit()
-        cur.close()
-        db.close()
-        return
+Base = declarative_base()
 
-def initialize_user_table():
-    try:
-        db = mysql.connector.connect(
-            host=mysql_host,
-            user=mysql_user,
-            password=mysql_password,
+class User(Base):
+    __tablename__ = 'users'
+
+    serialnumber = Column(Integer, primary_key=True)
+    user = Column(String(1000))
+    email = Column(String(1000))
+    username = Column(String(1000))
+    password = Column(String(300))
+
+class Project(Base):
+    __tablename__ = 'projects'
+
+    project_number = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.serialnumber'))
+    image1_link = Column(String(1000))
+    image2_link = Column(String(1000))
+    image3_link = Column(String(1000))
+    image4_link = Column(String(1000))
+    image5_link = Column(String(1000))
+    image1_duration = Column(Integer)
+    image2_duration = Column(Integer)
+    image3_duration = Column(Integer)
+    image4_duration = Column(Integer)
+    image5_duration = Column(Integer)
+    audio1_link = Column(String(1000))
+    audio2_link = Column(String(1000))
+    audio3_link = Column(String(1000))
+    audio1_duration = Column(Integer)
+    audio2_duration = Column(Integer)
+    audio3_duration = Column(Integer)
+    audio1_starting_time = Column(Integer)
+    audio2_starting_time = Column(Integer)
+    audio3_starting_time = Column(Integer)
+    overlay_text1 = Column(String(1000))
+    overlay_text2 = Column(String(1000))
+    overlay_text3 = Column(String(1000))
+
+def initialize_db(engine):
+    Base.metadata.create_all(engine)
+
+def get_session():
+    engine = create_engine(os.environ["cockroachdb://amiabuch:AmiBuch@1805CDB@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full"])
+    Session = sessionmaker(bind=engine)
+    return Session()
+
+def initialize_user_table(session):
+    session.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            serialnumber SERIAL PRIMARY KEY,
+            user VARCHAR(1000),
+            email VARCHAR(1000),
+            username VARCHAR(1000),
+            password VARCHAR(300)
         )
-        cur = db.cursor()
-        cur.execute("use user")
-        cur.execute("CREATE TABLE IF NOT EXISTS userdetails(serialnumber INT NOT NULL AUTO_INCREMENT PRIMARY KEY, user VARCHAR(1000), email VARCHAR(1000), username VARCHAR(1000), password VARCHAR(300))")
-        db.commit()
-        cur.close()
-        db.close()
-    except mysql.connector.Error as e:
-        print(f"Error initializing database: {e}")
+    """)
+    session.commit()
 
-def initialize_project_table():
-    try:
-        db = mysql.connector.connect(
-            host=mysql_host,
-            user=mysql_user,
-            password=mysql_password,
+def initialize_project_table(session):
+    session.execute("""
+        CREATE TABLE IF NOT EXISTS projects (
+            project_number SERIAL PRIMARY KEY,
+            user_id INT REFERENCES users(serialnumber),
+            image1_link VARCHAR(1000),
+            image2_link VARCHAR(1000),
+            image3_link VARCHAR(1000),
+            image4_link VARCHAR(1000),
+            image5_link VARCHAR(1000),
+            image1_duration INT,
+            image2_duration INT,
+            image3_duration INT,
+            image4_duration INT,
+            image5_duration INT,
+            audio1_link VARCHAR(1000),
+            audio2_link VARCHAR(1000),
+            audio3_link VARCHAR(1000),
+            audio1_duration INT,
+            audio2_duration INT,
+            audio3_duration INT,
+            audio1_starting_time INT,
+            audio2_starting_time INT,
+            audio3_starting_time INT,
+            overlay_text1 VARCHAR(1000),
+            overlay_text2 VARCHAR(1000),
+            overlay_text3 VARCHAR(1000)
         )
-        cur = db.cursor()
-        cur.execute("use user")
-        cur.execute("""CREATE TABLE IF NOT EXISTS projects (
-                        project_number INT AUTO_INCREMENT PRIMARY KEY,
-                        user_id INT,
-                        FOREIGN KEY (user_id) REFERENCES userdetails(serialnumber),
-                        image1_link VARCHAR(1000),
-                        image2_link VARCHAR(1000),
-                        image3_link VARCHAR(1000),
-                        image4_link VARCHAR(1000),
-                        image5_link VARCHAR(1000),
-                        image1_duration INT,
-                        image2_duration INT,
-                        image3_duration INT,
-                        image4_duration INT,
-                        image5_duration INT,
-                        audio1_link VARCHAR(1000),
-                        audio2_link VARCHAR(1000),
-                        audio3_link VARCHAR(1000),
-                        audio1_duration INT,
-                        audio2_duration INT,
-                        audio3_duration INT,
-                        audio1_starting_time INT,
-                        audio2_starting_time INT,
-                        audio3_starting_time INT,
-                        overlay_text1 VARCHAR(1000),
-                        overlay_text2 VARCHAR(1000),
-                        overlay_text3 VARCHAR(1000)
-                        )""")
-        db.commit()
-        cur.close()
-        db.close()
-    except mysql.connector.Error as e:
-        print(f"Error initializing project table: {e}")
+    """)
+    session.commit()
 
-def get_db_connection():
-    try:
-        return mysql.connector.connect(
-            host=mysql_host,
-            user=mysql_user,
-            password=mysql_password,
-        )
-    except mysql.connector.Error as e:
-        print(f"Error connecting to database: {e}")
-        return None
+def insert_user(session, user_data):
+    new_user = User(**user_data)
+    session.add(new_user)
+    session.commit()
 
-def get_users(query):
-    try:
-        db = get_db_connection()
-        if db:
-            cur = db.cursor()
-            cur.execute("use user")
-            cur.execute(query)
-            result = cur.fetchall()
-            cur.close()
-            db.close()
-            return result
-        else:
-            return None
-    except Exception as e:
-        print(f"Error executing query: {e}")
-        return None
-    
-def store_users(query, data):
-    try:
-        db = get_db_connection()
-        if db:
-            cur = db.cursor()
-            cur.execute("use user")
-            cur.execute(query, data)
-            db.commit()
-            cur.close()
-            db.close()
-            return True
-        else:
-            return False
-    except Exception as e:
-        print(f"Error executing query: {e}")
-        return False
+def insert_project(session, project_data):
+    new_project = Project(**project_data)
+    session.add(new_project)
+    session.commit()
 
-def insert_project(data):
-    try:
-        db = get_db_connection()
-        if db:
-            cur = db.cursor()
-            cur.execute("use user")
-            cur.execute("""INSERT INTO projects 
-                            (user_id, image1_link, image2_link, image3_link, image4_link, image5_link,
-                             image1_duration, image2_duration, image3_duration, image4_duration, image5_duration,
-                             audio1_link, audio2_link, audio3_link, audio1_duration, audio2_duration, audio3_duration,
-                             audio1_starting_time, audio2_starting_time, audio3_starting_time,
-                             overlay_text1, overlay_text2, overlay_text3) 
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-                         data)
-            db.commit()
-            cur.close()
-            db.close()
-            return True
-        else:
-            print("Database connection error.")
-            return False
-    except Exception as e:
-        print(f"Error inserting project record: {e}")
-        return False
+def get_user_projects(session, user_id):
+    return session.query(Project).filter_by(user_id=user_id).all()
 
-def get_user_projects(user_id):
-    try:
-        db = get_db_connection()
-        if db:
-            cur = db.cursor()
-            cur.execute("use user")
-            cur.execute("SELECT * FROM projects WHERE user_id = %s", (user_id,))
-            projects = cur.fetchall()
-            cur.close()
-            db.close()
-            return projects
-        else:
-            print("Database connection error.")
-            return None
-    except Exception as e:
-        print(f"Error retrieving user projects: {e}")
-        return None
 
 @app.route('/')
 def mainpage():
-    initialization()
+    initialize_db()
     initialize_user_table()
     initialize_project_table()
     return render_template('mainpage.html')
