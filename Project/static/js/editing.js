@@ -213,3 +213,76 @@ const colors = jsColorPicker('input.color', {
     }
 });
 
+function sendAdjustmentsData() {
+    const adjustmentsData = {}; // Object to store adjustments data
+
+    // Gather data for basic adjustments
+    adjustmentsData.basicAdjustments = {};
+    document.querySelectorAll('.sliders').forEach(slider => {
+        const label = slider.querySelector('label').textContent.replace(':', ''); // Remove colon from label
+        const input = slider.querySelector('input');
+        adjustmentsData.basicAdjustments[label] = input.value + input.getAttribute('data-sizing');
+    });
+
+    // Gather data for transforms
+    adjustmentsData.transforms = {};
+    document.querySelectorAll('.controls .sliders').forEach(slider => {
+        const label = slider.querySelector('label').textContent.replace(':', ''); // Remove colon from label
+        const input = slider.querySelector('input');
+        adjustmentsData.transforms[label] = input.value + input.getAttribute('data-sizing');
+    });
+
+    // Gather data for gradients
+    adjustmentsData.gradients = {};
+    document.querySelectorAll('.controls .sliders').forEach(slider => {
+        const label = slider.querySelector('label').textContent.replace(':', ''); // Remove colon from label
+        const input = slider.querySelector('input');
+        adjustmentsData.gradients[label] = input.value + (input.getAttribute('data-sizing') || '');
+    });
+
+    // Gather data for mix blend mode
+    adjustmentsData.mixBlendMode = document.querySelector('input[name="mix-blend-mode"]:checked').value;
+
+    // Gather data for text input
+    adjustmentsData.textInput = {};
+    document.querySelectorAll('.text-1 .sliders').forEach(slider => {
+        const label = slider.querySelector('label').textContent.replace(':', ''); // Remove colon from label
+        const input = slider.querySelector('input');
+        adjustmentsData.textInput[label] = input.value + input.getAttribute('data-sizing');
+    });
+
+    // Gather data for fonts
+    adjustmentsData.font = document.querySelector('input[name="font-select"]:checked').value;
+
+    // Gather data for border and background color
+    adjustmentsData.borderColor = document.querySelector('#border-color').value;
+    adjustmentsData.backgroundColor = document.querySelector('#background-color').value;
+
+    // Gather data for border styles
+    adjustmentsData.borderStyle = document.querySelector('input[name="border-styles"]:checked').value;
+
+    // Send adjustments data to the server
+    fetch('/save_adjustments', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(adjustmentsData)
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to send adjustments data to server.');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Adjustments data sent successfully:', data);
+    })
+    .catch(error => {
+        console.error('Error:', error.message);
+    });
+}
+
+// Add event listener to reload button
+const reloadButton = document.querySelector('#reload');
+reloadButton.addEventListener('click', sendAdjustmentsData);
