@@ -161,7 +161,7 @@ def login():
             resp = jsonify(login=True)
             access_token = create_access_token(identity=user)
             set_access_cookies(resp, access_token)
-            return redirect(url_for('userdetails')) 
+            return redirect(url_for('userdetails', user=user)) 
         else:
             return jsonify({"message": "Invalid username or password"}), 401
     return render_template('login.html')
@@ -185,10 +185,10 @@ def register():
 
 @app.route('/userdetails')
 @jwt_required()  # Protect this route with JWT authentication
-def userdetails():
-    user_details_query = "SELECT username, email FROM userdetails WHERE serialnumber = %s"
+def userdetails(user):
+    user_details_query = f"SELECT username, email FROM userdetails WHERE username = '{user}'"
     user_id = get_jwt_identity()
-    user_details_result = get_users(user_details_query, (user_id,))
+    user_details_result = get_users(user_details_query)
     
     if user_details_result:
         user_details = user_details_result[0]
