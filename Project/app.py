@@ -25,7 +25,6 @@ class User(Base):
     __tablename__ = 'users'
 
     serialnumber = Column(Integer, primary_key=True)
-    userkanaam = Column(String(1000))  # Change from 'user' to 'userkanaam'
     email = Column(String(1000))
     username = Column(String(1000))
     password = Column(String(300))
@@ -39,7 +38,6 @@ def get_session():
 def initialize_user_table(session):
     session.execute(text("""CREATE TABLE IF NOT EXISTS users (
             serialnumber SERIAL PRIMARY KEY,
-            userkanaam VARCHAR(1000),
             email VARCHAR(1000),
             username VARCHAR(1000),
             password VARCHAR(300)
@@ -74,8 +72,7 @@ def mainpage():
 def register():
     if request.method == "POST":
         data = request.form
-        user_data = {
-            "userkanaam": data["userkanaam"],
+        user_data =  {
             "email": data["email"],
             "username": data["username"],
             "password": generate_password_hash(data["password"])
