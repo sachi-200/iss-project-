@@ -77,7 +77,7 @@ def a():
     if result:
         return render_template("admin.html", users=result)
 @app.route('/logout', methods=['GET'])
-def LogoutUser():
+def logout():
     response = make_response(redirect(url_for('mainpage')))
     response.set_cookie('access_token_cookie', '', expires=0)
     return response

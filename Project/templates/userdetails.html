@@ -85,7 +85,8 @@
         <p class="email">EMAIL: {{user_details[1]}}</p>
       </div>
       <div class="logout-container">
-        <button onclick="login()" class="logout-button">Logout</button>
+        <!-- <button onclick="login()" class="logout-button">Logout</button> -->
+        <a href="{{ url_for('logout') }}">Logout</a>
       </div>
     </div>
   </div>
