@@ -1,3 +1,5 @@
+from __future__ import print_function # In python 2.7
+import sys
 from flask import *
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies
@@ -74,6 +76,11 @@ def a():
     session.close()
     if result:
         return render_template("admin.html", users=result)
+@app.route('/logout', methods=['GET'])
+def LogoutUser():
+    response = make_response(redirect(url_for('mainpage')))
+    response.set_cookie('access_token_cookie', '', expires=0)
+    return response
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == "POST":
@@ -93,10 +100,12 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html')
 @app.route('/new_project')
+@jwt_required
 def np():
     return render_template("new_project.html")
+@jwt_required
 @app.route('/project_page')
-def p():
+def project_page():
     return render_template("project_page.html")
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -125,14 +134,16 @@ def r():
 @app.route('/userdetails')
 @jwt_required()  # Protect this route with JWT authentication
 def userdetails():
-    user_details_query = "SELECT username, email FROM users WHERE serialnumber = %s"
     user_id = get_jwt_identity()
+    user_details_query = "SELECT username, email FROM users WHERE username = '"+user_id+"'"
     session = get_session()
-    user_details_result = session.execute(user_details_query, (user_id,))
+    user1 = get_user_by_username(session, user_id)
+    user_details_result = session.execute(user_details_query)
     user_details = user_details_result.fetchone()
     session.close()
+    # app.logger.info(user_id)
 
-    if user_details:
+    if user1:
         return render_template('userdetails.html', user_details=user_details)
     else:
         return "User not found"
