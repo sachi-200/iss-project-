@@ -67,7 +67,13 @@ def mainpage():
     return render_template('mainpage.html')
 @app.route('/admin')
 def a():
-    return render_template("admin.html")
+    user_details_query = "SELECT * FROM users"
+    session = get_session()
+    result = session.execute(user_details_query)
+    # s = result.fetchone()
+    session.close()
+    if result:
+        return render_template("admin.html", users=result)
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == "POST":
