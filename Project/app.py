@@ -68,7 +68,7 @@ def mainpage():
     session.close()
     return render_template('mainpage.html')
 @app.route('/admin')
-def a():
+def admin():
     user_details_query = "SELECT * FROM users"
     session = get_session()
     result = session.execute(user_details_query)
@@ -99,12 +99,13 @@ def register():
         set_access_cookies(resp, access_token)
         return redirect(url_for('login'))
     return render_template('register.html')
+
 @app.route('/new_project')
-@jwt_required
-def np():
+@jwt_required() 
+def new_project():
     return render_template("new_project.html")
-@jwt_required
 @app.route('/project_page')
+@jwt_required() 
 def project_page():
     return render_template("project_page.html")
 @app.route('/login', methods=['GET', 'POST'])
@@ -129,7 +130,7 @@ def login():
             return jsonify({"message": "Invalid username or password"}), 401
     return render_template('login.html')
 @app.route('/editing')
-def r():
+def editing():
     return render_template("editing.html")
 @app.route('/userdetails')
 @jwt_required()  # Protect this route with JWT authentication
@@ -148,7 +149,7 @@ def userdetails():
     else:
         return "User not found"
 @app.route('/linkandcontribution')
-def c():
+def linkandcontribution():
     return render_template("linkandcontribution.html")
 
 

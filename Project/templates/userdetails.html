@@ -72,9 +72,41 @@
       .logout-button:hover {
         background-color: #45a049;
       }
-      
+      .header{
+      position: absolute;
+      width: 100vw;
+      height: 10vh;
+      display: flex;
+      align-items: center;
+      gap: 0 30px;
+      margin-top: 0;
+      background-color: #000;
+      }
+      .header ul{
+      list-style: none;
+      display: flex;
+      padding: 0;
+      }
+      .header ul li{
+      padding: 10px;
+      z-index: 5;
+      }
+      .header ul li a{
+      font-size: 1rem;
+      color: #fff;
+      text-transform: uppercase;
+      text-decoration:none;
+      }
   </style>
 </head>
+<div class="header">
+  <ul>
+    <li><a href="{{ url_for('userdetails') }}" >Profile</a></li>
+    <li><a href="{{ url_for('project_page') }}" >My Project Page</a></li>
+    <li><a href="{{ url_for('new_project') }}" >Upload New</a></li>
+    <li><a href="{{ url_for('logout') }}" >Logout</a></li>
+  </ul>
+</div>
 <body>
   <div class="container">
     <div class="profile-card">
@@ -87,6 +119,7 @@
       <div class="logout-container">
         <!-- <button onclick="login()" class="logout-button">Logout</button> -->
         <a href="{{ url_for('logout') }}">Logout</a>
+        
       </div>
     </div>
   </div>

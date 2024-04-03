@@ -3,3 +3,29 @@ body {
   min-height: 75rem;
   padding-top: 4.5rem;
 }
+
+.header{
+	position: absolute;
+	width: 80vw;
+	height: 10vh;
+	display: flex;
+	align-items: center;
+	gap: 0 30px;
+	margin-top: 0;
+	background-color: #000;
+  }
+  .header ul{
+	list-style: none;
+	display: flex;
+	padding: 0;
+  }
+  .header ul li{
+	padding: 10px;
+	z-index: 5;
+  }
+  .header ul li a{
+	font-size: 1rem;
+	color: #fff;
+	text-transform: uppercase;
+	text-decoration:none;
+  }
