@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, jsonify, url_for, session
+from flask import *
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity, set_access_cookies
 from sqlalchemy import create_engine, Column, Integer, String, Text
@@ -33,7 +33,7 @@ class User(Base):
     password = Column(String(300))
 
 def get_session():
-    engine = create_engine("cockroachdb://amiabuch:jaWHu24ejIX9F_vQ-KciWA@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
+    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
     Session = sessionmaker(bind=engine)
     return Session()
 
@@ -59,7 +59,7 @@ def get_user_by_username(session, username):
 
 @app.route('/')
 def mainpage():
-    engine = create_engine("cockroachdb://amiabuch:jaWHu24ejIX9F_vQ-KciWA@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
+    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
     initialize_db(engine)
     session = get_session()
     initialize_user_table(session)
@@ -102,11 +102,14 @@ def login():
         user1 = get_user_by_username(session, username)
         session.close()    
         if user1 and check_password_hash(user1.password, password):
-            # Generate JWT token
+            # # Generate JWT token
+            # access_token = create_access_token(identity=username)
+            # resp = jsonify(login=True)
+            # set_access_cookies(resp, access_token)
             access_token = create_access_token(identity=username)
-            resp = jsonify(login=True)
-            set_access_cookies(resp, access_token)
-            return redirect(url_for('userdetails')) 
+            response = make_response(redirect(url_for('userdetails')))
+            response.set_cookie('access_token_cookie', value=access_token, max_age=2592000, httponly=True)
+            return response
         else:
             return jsonify({"message": "Invalid username or password"}), 401
     return render_template('login.html')
