@@ -1,12 +1,10 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    
-
     <title>New Project</title>
 
     <!-- Bootstrap core CSS -->
@@ -15,45 +13,33 @@
     <!-- Custom styles for this template -->
     <link href="../static/css/album.css" rel="stylesheet">
     <style>
-        #drop-area {
-            border: 2px dashed #ccc;
-            padding: 20px;
-            text-align: center;
-            margin: 20px auto;
-            width: 50%;
-        }
-        img {
-            max-width: 100px;
-            max-height: 100px;
-            margin: 5px;
-        }
-      #mini-images-container {
-        border: 2px solid #ccc; /* Add border around the mini images */
+      #drop-area {
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        width: 50vw;
+        height: 300px;
+        margin: 20px auto;
+        text-align: center;
+        padding: 20px;
+      }
+      #preview {
+        border: 2px solid #ccc;
         border-radius: 10px;
         padding: 10px;
         margin-top: 20px;
         display: flex;
         flex-wrap: wrap;
       }
-      #mini-images {
-        display: flex;
-        flex-wrap: wrap;
-        margin-top: 20px;
-      }
-      .mini-image {
-        width: 100px; /* Make the images larger */
+      .preview-image {
+        width: 100px;
         height: 100px;
         margin: 5px;
         border: 1px solid #ccc;
       }
     </style>
-  </head>
-
-  
-
-    <body>
-
-        <header>
+</head>
+<body>
+    <header>
           <div class="collapse bg-dark" id="navbarHeader">
             <div class="container">
               <div class="row">
@@ -84,112 +70,76 @@
             </div>
           </div>
         </header>
-    
-
     <main role="main">
-<br><br>
-<h2>Upload Project Images</h2>
-<div id="drop-area">
-Drag and Drop Images Here
-</div>
-<!-- <form id="upload-form" method="post" enctype="multipart/form-data"> -->
-Project Name: <input type="text" name="project_name" id="project_name"><br>
-<input type="file" name="file" id="file" multiple style="display: none;"><br>
-<div id="preview"></div>
-<input type="submit">
-</form>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script>
- let dropArea = document.getElementById('drop-area');
+        <br><br>
+        <h2>Upload Project Images</h2>
+        <div id="drop-area">
+            Drag and Drop Images Here
+        </div>
+        <form id="upload-form" method="post" enctype="multipart/form-data">
+            Project Name: <input type="text" name="projname" id="projname"><br> <!-- Add project name input -->
+            <input type="file" name="files[]" id="file" multiple style="display: none;"><br>
+            <div id="preview"></div> <!-- Display uploaded images here -->
+            <input type="submit">
+        </form>
+    </main>
 
-dropArea.addEventListener('dragover', function(event) {
-    event.preventDefault();
-    dropArea.style.border = '2px dashed #aaa';
-});
+    <!-- JavaScript libraries -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $(document).ready(function(){
+            var dropArea = $('#drop-area');
 
-dropArea.addEventListener('dragleave', function(event) {
-    event.preventDefault();
-    dropArea.style.border = '2px dashed #ccc';
-});
+            // When a file is dragged over the drop zone
+            dropArea.on('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).addClass('dragging');
+            });
 
-dropArea.addEventListener('drop', function(event) {
-    event.preventDefault();
-    dropArea.style.border = '2px dashed #ccc';
-    let files = event.dataTransfer.files;
-    let formData = new FormData();
+            // When a file is dragged out of the drop zone
+            dropArea.on('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('dragging');
+            });
 
-    for (let i = 0; i < files.length; i++) {
-        let file = files[i];
-        formData.append('files[]', file);
-        let reader = new FileReader();
-        reader.onload = function(event) {
-            let img = document.createElement('img');
-            img.src = event.target.result;
-            dropArea.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-    }
+            // When a file is dropped into the drop zone
+            dropArea.on('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('dragging');
+                var files = e.originalEvent.dataTransfer.files;
+                $('#file').prop('files', files); // Add the files to the hidden input element
 
-    fetch('/new_project', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => console.log(data))
-    .catch(error => console.error('Error:', error));
-});
-$(document).ready(function(){
-var dropZone = $('#drop-zone');
-// When a file is dragged over the drop zone
-dropZone.on('dragover', function(e) {
-e.preventDefault();
-e.stopPropagation();
-$(this).addClass('dragging');
-});
-// When a file is dragged out of the drop zone
-dropZone.on('dragleave', function(e) {
-e.preventDefault();
-e.stopPropagation();
-$(this).removeClass('dragging');
-});
-// When a file is dropped into the drop zone
-dropZone.on('drop', function(e) {
-e.preventDefault();
-e.stopPropagation();
-$(this).removeClass('dragging');
-var files = e.originalEvent.dataTransfer.files;
-$('#file').prop('files', files); // Add the files to the hidden input element
-// Display thumbnails of the selected images
-$('#preview').empty();
-for (var i = 0; i < files.length; i++) {
-var reader = new FileReader();
-reader.onload = function(e) {
-var img = $('<img>').attr('src', e.target.result);
-var button = $('<button>').text('Remove').click(function() {
-$(this).parent().remove();
-});
-var div = $('<div>').append(img, button);
-$('#preview').append(div);
-};
-reader.readAsDataURL(files[i]);
-}
-});
-$("#upload-form").on('submit', function(e){
-e.preventDefault();
-var formData = new FormData(this);
-$.ajax({
-url: '/upload',
-type: 'POST',
-data: formData,
-success: function (data) {
-alert('Files uploaded successfully');
-},
-cache: false,
-contentType: false,
-processData: false
-});
-});
-});
-</script>
-  </body>
+                // Display thumbnails of the selected images
+                $('#preview').empty();
+                for (var i = 0; i < files.length; i++) {
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var img = $('<img>').attr('src', e.target.result).addClass('preview-image');
+                        $('#preview').append(img);
+                    };
+                    reader.readAsDataURL(files[i]);
+                }
+            });
+
+            $("#upload-form").on('submit', function(e){
+                e.preventDefault();
+                var formData = new FormData(this);
+                $.ajax({
+                    url: '/new_project',
+                    type: 'POST',
+                    data: formData,
+                    success: function (data) {
+                        alert('Images uploaded successfully');
+                    },
+                    cache: false,
+                    contentType: false,
+                    processData: false
+                });
+            });
+        });
+    </script>
+</body>
 </html>
