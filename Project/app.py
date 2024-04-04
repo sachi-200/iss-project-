@@ -59,7 +59,7 @@ def initialize_user_table(session):
     session.commit()
 
 def create_user_project_table(username):
-    engine = create_engine("sqlite:///images.db")  # Use SQLite for testing
+    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
     Base.metadata.create_all(engine)
     session = get_session()
     if not session.query(Image).filter_by(username=username).first():
