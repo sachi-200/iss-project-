@@ -130,7 +130,7 @@ dropArea.addEventListener('drop', function(event) {
         reader.readAsDataURL(file);
     }
 
-    fetch('/upload', {
+    fetch('/new_project', {
         method: 'POST',
         body: formData
     })
