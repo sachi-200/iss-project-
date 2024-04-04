@@ -37,9 +37,12 @@ class User(Base):
     email = Column(String(1000))
     username = Column(String(1000))
     password = Column(String(300))
-class Image(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    data = db.Column(db.LargeBinary)
+class Image(Base):
+    __tablename__ = 'image'
+    serialnumber = Column(Integer, primary_key=True)
+    username = Column(String(100))
+    projname = Column(String(100))
+    data = Column(LargeBinary)
 def get_session():
     engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
     Session = sessionmaker(bind=engine)
