@@ -7,7 +7,10 @@ from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.sql import text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from flask_sqlalchemy import SQLAlchemy
 import os
+import io
+import PIL.Image as Image
 from datetime import *
 from psycopg2 import *
 import time
@@ -22,7 +25,8 @@ jwt = JWTManager(app)
 
 # SQLAlchemy Configuration
 Base = declarative_base()
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full'
+db = SQLAlchemy(app)
 def initialize_db(engine):
     Base.metadata.create_all(engine)
 
@@ -33,7 +37,9 @@ class User(Base):
     email = Column(String(1000))
     username = Column(String(1000))
     password = Column(String(300))
-
+class Image(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    data = db.Column(db.LargeBinary)
 def get_session():
     engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
     Session = sessionmaker(bind=engine)
@@ -59,6 +65,14 @@ def insert_user(session, user_data):
 def get_user_by_username(session, username):
     return session.query(User).filter_by(username=username).first()
 
+@app.route('/upload', methods=['POST'])
+def upload():
+    files = request.files.getlist('files[]')
+    for file in files:
+        image = Image(data=file.read())
+        db.session.add(image)
+    db.session.commit()
+    return jsonify({'message': 'Images uploaded successfully'})
 @app.route('/')
 def mainpage():
     engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
@@ -103,6 +117,7 @@ def register():
 @app.route('/new_project')
 @jwt_required() 
 def new_project():
+    db.create_all()
     return render_template("new_project.html")
 @app.route('/project_page')
 @jwt_required() 

@@ -15,15 +15,18 @@
     <!-- Custom styles for this template -->
     <link href="../static/css/album.css" rel="stylesheet">
     <style>
-      #drop-area {
-        border: 2px dashed #ccc;
-        border-radius: 10px;
-        width: 50vw;
-        height: 300px;
-        margin: 20px auto;
-        text-align: center;
-        padding: 20px;
-      }
+        #drop-area {
+            border: 2px dashed #ccc;
+            padding: 20px;
+            text-align: center;
+            margin: 20px auto;
+            width: 50%;
+        }
+        img {
+            max-width: 100px;
+            max-height: 100px;
+            margin: 5px;
+        }
       #mini-images-container {
         border: 2px solid #ccc; /* Add border around the mini images */
         border-radius: 10px;
@@ -86,10 +89,10 @@
     <main role="main">
 <br><br>
 <h2>Upload Project Images</h2>
-<div id="drop-zone">
+<div id="drop-area">
 Drag and Drop Images Here
 </div>
-<form id="upload-form" method="post" enctype="multipart/form-data">
+<!-- <form id="upload-form" method="post" enctype="multipart/form-data"> -->
 Project Name: <input type="text" name="project_name" id="project_name"><br>
 <input type="file" name="file" id="file" multiple style="display: none;"><br>
 <div id="preview"></div>
@@ -97,6 +100,44 @@ Project Name: <input type="text" name="project_name" id="project_name"><br>
 </form>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
+ let dropArea = document.getElementById('drop-area');
+
+dropArea.addEventListener('dragover', function(event) {
+    event.preventDefault();
+    dropArea.style.border = '2px dashed #aaa';
+});
+
+dropArea.addEventListener('dragleave', function(event) {
+    event.preventDefault();
+    dropArea.style.border = '2px dashed #ccc';
+});
+
+dropArea.addEventListener('drop', function(event) {
+    event.preventDefault();
+    dropArea.style.border = '2px dashed #ccc';
+    let files = event.dataTransfer.files;
+    let formData = new FormData();
+
+    for (let i = 0; i < files.length; i++) {
+        let file = files[i];
+        formData.append('files[]', file);
+        let reader = new FileReader();
+        reader.onload = function(event) {
+            let img = document.createElement('img');
+            img.src = event.target.result;
+            dropArea.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    fetch('/upload', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error('Error:', error));
+});
 $(document).ready(function(){
 var dropZone = $('#drop-zone');
 // When a file is dragged over the drop zone

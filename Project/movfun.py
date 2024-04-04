@@ -4,12 +4,18 @@ from natsort import natsorted
 from PIL import Image
 import io
 from moviepy.editor import *
+from array import array
 
 def bytes_to_image_pil(byte_data):
-    image = Image.open(io.BytesIO(byte_data))
-    return image
+    try:
+        image = Image.open(io.BytesIO(byte_data))
+        return image
+    except Exception as e:
+        print("Error:", e)
+        print("Byte data:", byte_data)
+        return None
 
-def create_video_from_images(image_list, image_lengths, output_file, transition_types=None, transition_duration=1, fps=24 , audio_file=None):
+def create_video_from_images(image_list, image_lengths, output_file, transition_types=None, transition_duration=1, fps=24 , audio_file=None, res=720):
     # # Get absolute path of the image directory
     # base_dir = os.path.realpath(image_dir)
     
@@ -25,6 +31,13 @@ def create_video_from_images(image_list, image_lengths, output_file, transition_
     for image_da in image_list:
         image=bytes_to_image_pil(image_da)
         file_list_sorted.append(image)
+    resolutions = {
+        360: (480, 360),
+        480: (854, 480),
+        720: (1280, 720),
+        1080: (1920, 1080)
+    }
+    width, height = resolutions[res]
 
     # Check if the length of file_list_sorted matches the length of image_lengths
     if len(file_list_sorted) != len(image_lengths):
