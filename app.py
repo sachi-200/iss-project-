@@ -9,6 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import LargeBinary
 from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Float 
 import os
 import io
 import PIL.Image as Image
@@ -47,6 +48,8 @@ class Image(Base):
     duration = Column(Integer)
     transition = Column(Integer)
     data = Column(LargeBinary)
+    resolution = Column(String(50))
+    size_mb = Column(Float)
 def get_session():
     engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
     Session = sessionmaker(bind=engine)
@@ -145,30 +148,27 @@ def new_project():
         files = request.files.getlist('files[]')
         session = get_session()
         create_user_project_table(username)  # Ensure user's project table exists
-        imagelist = []
-        transitionlist = []
-        imagelength = []
 
         for idx, file in enumerate(files):
             image_data = file.read()
-            duration = int(durations[idx])
-            imagelength.append(duration)  # Extract duration from the list
+            duration = int(durations[idx])  # Extract duration from the list
             transition = int(transitions[idx])  # Extract transition from the list
-            imagelist.append(image_data)
+            
+            # Get image resolution and size
+            image = Image.open(io.BytesIO(image_data))
+            resolution = f"{image.width}x{image.height}"
+            size_mb = len(image_data) / (1024 * 1024)  # Convert bytes to megabytes
+            
             # Create a new Image instance with the extracted data
-            new_image = Image(username=username, projname=project_name, duration=duration, transition=transition, data=image_data)
-            imagelist.append(image_data)
+            new_image = Image(username=username, projname=project_name, duration=duration, 
+                              transition=transition, data=image_data, resolution=resolution, size_mb=size_mb)
             session.add(new_image)
-        
-        
+
         session.commit()
         session.close()
-        session['imagelist'] = imagelist
-        session['imagelength'] = imagelength
         
         # Redirect to the editing page after successful upload
         return render_template("editing.html")
-        
 
     return render_template("new_project.html")
 @app.route('/project_page')
@@ -210,18 +210,18 @@ def editing():
 @jwt_required()  # Protect this route with JWT authentication
 def userdetails():
     user_id = get_jwt_identity()
-    user_details_query = "SELECT username, email FROM users WHERE username = '"+user_id+"'"
+    user_details_query = text("SELECT username, email FROM users WHERE username = :user_id")
     session = get_session()
     user1 = get_user_by_username(session, user_id)
-    user_details_result = session.execute(user_details_query)
+    user_details_result = session.execute(user_details_query, {'user_id': user_id})  # Pass the user_id parameter here
     user_details = user_details_result.fetchone()
     session.close()
-    # app.logger.info(user_id)
 
     if user1:
         return render_template('userdetails.html', user_details=user_details)
     else:
         return "User not found"
+
 @app.route('/linkandcontribution')
 def linkandcontribution():
     return render_template("linkandcontribution.html")
