@@ -26,7 +26,7 @@ jwt = JWTManager(app)
 
 # SQLAlchemy Configuration
 Base = declarative_base()
-app.config['SQLALCHEMY_DATABASE_URI'] = 'cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=root.crt'
 db = SQLAlchemy(app)
 def initialize_db(engine):
     Base.metadata.create_all(engine)
@@ -47,7 +47,7 @@ class Image(Base):
     transition = Column(Integer)
     data = Column(LargeBinary)
 def get_session():
-    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
+    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=root.crt")
     Session = sessionmaker(bind=engine)
     return Session()
 
@@ -61,7 +61,7 @@ def initialize_user_table(session):
     session.commit()
 
 def create_user_project_table(username):
-    engine = create_engine("sqlite:///images.db")  # Use SQLite for testing
+    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=root.crt")  # Use SQLite for testing
     Base.metadata.create_all(engine)
     session = get_session()
     if not session.query(Image).filter_by(username=username).first():
@@ -90,7 +90,7 @@ def upload():
     return jsonify({'message': 'Images uploaded successfully'})
 @app.route('/')
 def mainpage():
-    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
+    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=root.crt")
     initialize_db(engine)
     session = get_session()
     initialize_user_table(session)
