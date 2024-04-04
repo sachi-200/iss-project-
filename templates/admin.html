@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin</title>
+    <link rel="stylesheet" href="../static/css/admin.css">
+</head>
+
+<body style="margin-top: 10vh;">
+
+    <center>
+        <h2>ADMIN PAGE</h2>
+    </center>
+    <br /><br /><br />
+    <table style="width:100%">
+        <tr>
+            <th>Serial Number</th>
+            <th>Name</th>
+            <th>Email</th>
+        </tr>
+        {% for user in users %}
+        <tr>
+            <td>{{ user[0] }}</td>
+            <td>{{ user[3] }}</td>
+            <td>{{ user[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+
+</html>
