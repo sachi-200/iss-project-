@@ -15,6 +15,7 @@ import PIL.Image as Image
 from datetime import *
 from psycopg2 import *
 import time
+import movfun
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
@@ -26,7 +27,7 @@ jwt = JWTManager(app)
 
 # SQLAlchemy Configuration
 Base = declarative_base()
-app.config['SQLALCHEMY_DATABASE_URI'] = 'cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=root.crt'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full'
 db = SQLAlchemy(app)
 def initialize_db(engine):
     Base.metadata.create_all(engine)
@@ -47,7 +48,7 @@ class Image(Base):
     transition = Column(Integer)
     data = Column(LargeBinary)
 def get_session():
-    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=root.crt")
+    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
     Session = sessionmaker(bind=engine)
     return Session()
 
@@ -61,7 +62,7 @@ def initialize_user_table(session):
     session.commit()
 
 def create_user_project_table(username):
-    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=root.crt")  # Use SQLite for testing
+    engine = create_engine("sqlite:///images.db")  # Use SQLite for testing
     Base.metadata.create_all(engine)
     session = get_session()
     if not session.query(Image).filter_by(username=username).first():
@@ -90,7 +91,7 @@ def upload():
     return jsonify({'message': 'Images uploaded successfully'})
 @app.route('/')
 def mainpage():
-    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=root.crt")
+    engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
     initialize_db(engine)
     session = get_session()
     initialize_user_table(session)
@@ -144,22 +145,32 @@ def new_project():
         files = request.files.getlist('files[]')
         session = get_session()
         create_user_project_table(username)  # Ensure user's project table exists
+        imagelist = []
+        transitionlist = []
+        imagelength = []
 
         for idx, file in enumerate(files):
             image_data = file.read()
-            duration = int(durations[idx])  # Extract duration from the list
+            duration = int(durations[idx])
+            imagelength.append(duration)  # Extract duration from the list
             transition = int(transitions[idx])  # Extract transition from the list
-            
+            imagelist.append(image_data)
             # Create a new Image instance with the extracted data
             new_image = Image(username=username, projname=project_name, duration=duration, transition=transition, data=image_data)
+            imagelist.append(image_data)
             session.add(new_image)
-
+        
+        
         session.commit()
         session.close()
-        return jsonify({'message': 'Images uploaded successfully'})
+        session['imagelist'] = imagelist
+        session['imagelength'] = imagelength
+        
+        # Redirect to the editing page after successful upload
+        return render_template("editing.html")
+        
 
     return render_template("new_project.html")
-
 @app.route('/project_page')
 @jwt_required() 
 def project_page():
@@ -187,6 +198,13 @@ def login():
     return render_template('login.html')
 @app.route('/editing')
 def editing():
+    # Retrieve data from session
+    imagelist = session.get('imagelist')
+    imagelength = session.get('imagelength')
+    
+    # Call the function to create video
+    # movfun.create_video_from_images(imagelist, imagelength, "./static/video.mp4")
+    
     return render_template("editing.html")
 @app.route('/userdetails')
 @jwt_required()  # Protect this route with JWT authentication
