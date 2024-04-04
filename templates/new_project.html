@@ -88,72 +88,88 @@
     <!-- JavaScript libraries -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>
-        $(document).ready(function(){
-            var dropArea = $('#drop-area');
-
-            // Function to show popup for image duration and transition number input
-            function showPopup(imageIndex) {
-                var imageDuration = prompt("Enter image duration (in seconds) for image " + (imageIndex + 1) + ":");
-                var transitionNumber = prompt("Enter transition number for image " + (imageIndex + 1) + ":");
-
-                // You can use the entered values as needed, for now, just logging them
-                console.log("Image " + (imageIndex + 1) + " duration: " + imageDuration + "s");
-                console.log("Image " + (imageIndex + 1) + " transition: " + transitionNumber);
-            }
-
-            // When a file is dragged over the drop zone
-            dropArea.on('dragover', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $(this).addClass('dragging');
-            });
-
-            // When a file is dragged out of the drop zone
-            dropArea.on('dragleave', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $(this).removeClass('dragging');
-            });
-
-            // When a file is dropped into the drop zone
-            dropArea.on('drop', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                $(this).removeClass('dragging');
-                var files = e.originalEvent.dataTransfer.files;
-                $('#file').prop('files', files); // Add the files to the hidden input element
-
-                // Display thumbnails of the selected images
-                $('#preview').empty();
-                for (var i = 0; i < files.length; i++) {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        var img = $('<img>').attr('src', e.target.result).addClass('preview-image');
-                        $('#preview').append(img);
-                    };
-                    reader.readAsDataURL(files[i]);
-
-                    // Show popup for image duration and transition number
-                    showPopup(i);
-                }
-            });
-
-            $("#upload-form").on('submit', function(e){
-                e.preventDefault();
-                var formData = new FormData(this);
-                $.ajax({
-                    url: '/new_project',
-                    type: 'POST',
-                    data: formData,
-                    success: function (data) {
-                        alert('Images uploaded successfully');
-                    },
-                    cache: false,
-                    contentType: false,
-                    processData: false
-                });
-            });
-        });
-    </script>
+      $(document).ready(function(){
+          // Function to retrieve JWT token from cookie
+          function getJwtToken() {
+              return document.cookie.replace(/(?:(?:^|.*;\s*)access_token_cookie\s*\=\s*([^;]*).*$)|^.*$/, "$1");
+          }
+  
+          var dropArea = $('#drop-area');
+  
+          // Function to show popup for image duration and transition number input
+          function showPopup(imageIndex) {
+              var imageDuration = prompt("Enter image duration (in seconds) for image " + (imageIndex + 1) + ":");
+              var transitionNumber = prompt("Enter transition number for image " + (imageIndex + 1) + ":");
+  
+              // You can use the entered values as needed, for now, just logging them
+              console.log("Image " + (imageIndex + 1) + " duration: " + imageDuration + "s");
+              console.log("Image " + (imageIndex + 1) + " transition: " + transitionNumber);
+          }
+  
+          // When a file is dragged over the drop zone
+          dropArea.on('dragover', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              $(this).addClass('dragging');
+          });
+  
+          // When a file is dragged out of the drop zone
+          dropArea.on('dragleave', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              $(this).removeClass('dragging');
+          });
+  
+          // When a file is dropped into the drop zone
+          dropArea.on('drop', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              $(this).removeClass('dragging');
+              var files = e.originalEvent.dataTransfer.files;
+              $('#file').prop('files', files); // Add the files to the hidden input element
+  
+              // Display thumbnails of the selected images
+              $('#preview').empty();
+              for (var i = 0; i < files.length; i++) {
+                  var reader = new FileReader();
+                  reader.onload = function(e) {
+                      var img = $('<img>').attr('src', e.target.result).addClass('preview-image');
+                      $('#preview').append(img);
+                  };
+                  reader.readAsDataURL(files[i]);
+  
+                  // Show popup for image duration and transition number
+                  showPopup(i);
+              }
+          });
+  
+          $("#upload-form").on('submit', function(e){
+              e.preventDefault();
+              var formData = new FormData(this);
+              
+              // Include JWT token in request headers
+              var jwtToken = getJwtToken();
+              if (jwtToken) {
+                  $.ajax({
+                      url: '/new_project',
+                      type: 'POST',
+                      data: formData,
+                      beforeSend: function(xhr) {
+                          xhr.setRequestHeader("Authorization", "Bearer " + jwtToken);
+                      },
+                      success: function (data) {
+                          alert('Images uploaded successfully');
+                      },
+                      cache: false,
+                      contentType: false,
+                      processData: false
+                  });
+              } else {
+                  alert('JWT token not found');
+              }
+          });
+      });
+  </script>
+  
 </body>
 </html>
