@@ -6,6 +6,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.sql import text
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import LargeBinary
 from sqlalchemy.orm import sessionmaker
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -40,7 +41,7 @@ class User(Base):
 class Image(Base):
     __tablename__ = 'image'
     serialnumber = Column(Integer, primary_key=True)
-    username = Column(String(100))
+    username = Column(String(1000))
     projname = Column(String(100))
     data = Column(LargeBinary)
 def get_session():
@@ -57,6 +58,15 @@ def initialize_user_table(session):
         )"""))
     session.commit()
 
+def create_user_project_table(username):
+    engine = create_engine("sqlite:///images.db")  # Use SQLite for testing
+    Base.metadata.create_all(engine)
+    session = get_session()
+    if not session.query(Image).filter_by(username=username).first():
+        user_project = Image(username=username)
+        session.add(user_project)
+        session.commit()
+    session.close()
 def insert_user(session, user_data):
     new_user = User(**user_data)
     session.add(new_user)
@@ -120,7 +130,23 @@ def register():
 @app.route('/new_project')
 @jwt_required() 
 def new_project():
-    db.create_all()
+
+    user_id = get_jwt_identity()
+    
+    if request.method == 'POST':
+        username = get_jwt_identity()
+        project_name = request.form['projname']
+        files = request.files.getlist('files[]')
+        session = get_session()
+        create_user_project_table(username)  # Ensure user's project table exists
+        user_project = session.query(Image).filter_by(username=username).first()
+        for file in files:
+            image_data = file.read()
+            user_project.data = image_data
+            session.add(user_project)
+        session.commit()
+        session.close()
+        return jsonify({'message': 'Images uploaded successfully'})
     return render_template("new_project.html")
 @app.route('/project_page')
 @jwt_required() 
