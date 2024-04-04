@@ -43,6 +43,8 @@ class Image(Base):
     serialnumber = Column(Integer, primary_key=True)
     username = Column(String(1000))
     projname = Column(String(100))
+    duration = Column(Integer)
+    transition = Column(Integer)
     data = Column(LargeBinary)
 def get_session():
     engine = create_engine("cockroachdb://amiabuch:j9qhBc5e8lpkUTGYdria_w@motion-al-9036.8nk.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full")
@@ -127,27 +129,37 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html')
 
-@app.route('/new_project')
+
+
+@app.route('/new_project', methods=['GET', 'POST'])
 @jwt_required() 
 def new_project():
-
     user_id = get_jwt_identity()
-    
+
     if request.method == 'POST':
         username = get_jwt_identity()
         project_name = request.form['projname']
+        durations = request.form.getlist('duration')  # Retrieve durations from the form
+        transitions = request.form.getlist('transition')  # Retrieve transitions from the form
         files = request.files.getlist('files[]')
         session = get_session()
         create_user_project_table(username)  # Ensure user's project table exists
-        user_project = session.query(Image).filter_by(username=username).first()
-        for file in files:
+
+        for idx, file in enumerate(files):
             image_data = file.read()
-            user_project.data = image_data
-            session.add(user_project)
+            duration = int(durations[idx])  # Extract duration from the list
+            transition = int(transitions[idx])  # Extract transition from the list
+            
+            # Create a new Image instance with the extracted data
+            new_image = Image(username=username, projname=project_name, duration=duration, transition=transition, data=image_data)
+            session.add(new_image)
+
         session.commit()
         session.close()
         return jsonify({'message': 'Images uploaded successfully'})
+
     return render_template("new_project.html")
+
 @app.route('/project_page')
 @jwt_required() 
 def project_page():
